@@ -2,41 +2,51 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Form Pemesanan</title>
+    <title>Aplikasi Kasir Sederhana</title>
     <style>
-        body { font-family: Arial; margin: 40px; }
-        input, textarea, button { width: 100%; padding: 10px; margin: 8px 0; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
+        body { 
+            font-family: Arial; 
+            margin: 40px; 
+            max-width: 600px;
+        }
+        .menu-item {
+            padding: 12px;
+            background: #f4f4f4;
+            margin: 6px 0;
+            cursor: pointer;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+        }
+        .menu-item:hover {
+            background: #e8e8e8;
+        }
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-top: 20px; 
+        }
+        th, td { 
+            border: 1px solid #ccc; 
+            padding: 8px; 
+        }
         th { background: #f2f2f2; }
-        .total-box { font-size: 20px; margin-top: 10px; }
+        .total-box { 
+            font-size: 22px; 
+            font-weight: bold; 
+            margin-top: 10px; 
+        }
     </style>
 </head>
 <body>
 
-<h2>Form Pemesanan</h2>
+<h2>Daftar Menu</h2>
 
-<input id="nama" placeholder="Nama">
-<input id="pesanan" placeholder="Nama Pesanan (contoh: Nasi Goreng)">
-<input id="harga" placeholder="Harga (contoh: 15000)" type="number">
-<textarea id="catatan" placeholder="Catatan (opsional)"></textarea>
-
-<button onclick="kirimPesanan()">Kirim</button>
+<div id="menuList"></div>
 
 <h2>Daftar Pesanan</h2>
 <table id="tabelPesanan">
     <tr>
-        <th>Nama</th>
-        <th>Pesanan</th>
-        <th>Harga</th>
-        <th>Catatan</th>
-    </tr>
-</table>
-
-<h2>Daftar Harga</h2>
-<table id="tabelHarga">
-    <tr>
-        <th>Pesanan</th>
+        <th>Menu</th>
         <th>Harga</th>
     </tr>
 </table>
@@ -44,79 +54,63 @@
 <h2>Total Harga</h2>
 <div class="total-box" id="totalHarga">Rp 0</div>
 
-
 <script>
+
+    // ====== DAFTAR MENU (tinggal tambah di sini) ======
+    const menu = [
+        { nama: "Nasi Goreng", harga: 15000 },
+        { nama: "Mie Goreng", harga: 12000 },
+        { nama: "Ayam Geprek", harga: 18000 },
+        { nama: "Es Teh", harga: 5000 },
+        { nama: "Es Jeruk", harga: 7000 }
+    ];
+
+    // Tampilkan menu
+    const menuContainer = document.getElementById("menuList");
+    menu.forEach(item => {
+        menuContainer.innerHTML += `
+            <div class="menu-item" onclick="tambahPesanan('${item.nama}', ${item.harga})">
+                ${item.nama} — Rp ${item.harga.toLocaleString()}
+            </div>
+        `;
+    });
+
+
+    // Load pesanan dari localStorage
     function loadData() {
         const pesanan = JSON.parse(localStorage.getItem("pesanan") || "[]");
 
-        const tabelPesanan = document.getElementById("tabelPesanan");
-        const tabelHarga = document.getElementById("tabelHarga");
+        const tabel = document.getElementById("tabelPesanan");
         let total = 0;
 
-        // Reset tabel (biarkan header)
-        tabelPesanan.innerHTML = `
+        tabel.innerHTML = `
             <tr>
-                <th>Nama</th>
-                <th>Pesanan</th>
-                <th>Harga</th>
-                <th>Catatan</th>
-            </tr>
-        `;
-
-        tabelHarga.innerHTML = `
-            <tr>
-                <th>Pesanan</th>
+                <th>Menu</th>
                 <th>Harga</th>
             </tr>
         `;
 
-        pesanan.forEach(data => {
-            // isi tabel pesanan
-            tabelPesanan.innerHTML += `
+        pesanan.forEach(p => {
+            tabel.innerHTML += `
                 <tr>
-                    <td>${data.nama}</td>
-                    <td>${data.pesanan}</td>
-                    <td>Rp ${data.harga}</td>
-                    <td>${data.catatan}</td>
+                    <td>${p.nama}</td>
+                    <td>Rp ${p.harga.toLocaleString()}</td>
                 </tr>
             `;
-
-            // isi tabel harga
-            tabelHarga.innerHTML += `
-                <tr>
-                    <td>${data.pesanan}</td>
-                    <td>Rp ${data.harga}</td>
-                </tr>
-            `;
-
-            total += Number(data.harga);
+            total += p.harga;
         });
 
-        document.getElementById("totalHarga").innerText = "Rp " + total.toLocaleString();
+        document.getElementById("totalHarga").innerText = 
+            "Rp " + total.toLocaleString();
     }
 
-    function kirimPesanan() {
-        const nama = document.getElementById("nama").value;
-        const pesanan = document.getElementById("pesanan").value;
-        const harga = document.getElementById("harga").value;
-        const catatan = document.getElementById("catatan").value;
 
-        if (!nama || !pesanan || !harga) {
-            alert("Nama, pesanan, dan harga wajib diisi!");
-            return;
-        }
-
+    // Tambah pesanan dengan klik
+    function tambahPesanan(nama, harga) {
         let data = JSON.parse(localStorage.getItem("pesanan") || "[]");
 
-        data.push({ nama, pesanan, harga, catatan });
-
+        data.push({ nama, harga });
         localStorage.setItem("pesanan", JSON.stringify(data));
-
-        // reset input
-        document.getElementById("nama").value = "";
-        document.getElementById("pesanan").value = "";
-        document.getElementById("harga").value = "";
-        document.getElementById("catatan").value = "";
 
         loadData();
     }
